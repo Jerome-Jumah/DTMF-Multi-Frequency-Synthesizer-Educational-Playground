@@ -134,6 +134,10 @@ export class DtmfEngine {
       this.safetyTimeoutId = null;
     }
 
+    if (this.onStateChange) {
+      this.onStateChange(false, null);
+    }
+
     if (!this.audioCtx) return;
     const now = this.audioCtx.currentTime;
     const fadeTime = 0.03; // 30ms smooth release transition

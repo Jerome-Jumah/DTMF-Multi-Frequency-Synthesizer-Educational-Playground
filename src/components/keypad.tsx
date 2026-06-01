@@ -5,8 +5,8 @@
 
 import { Keyboard, Phone, Volume2 } from "lucide-react";
 import React, { useEffect, useState } from "react";
-import { DTMF_GRID, DtmfKeyInfo, HIGH_FREQS, HighFreq, LOW_FREQS, LowFreq } from "../types";
 import { DtmfEngine } from "../dtmf-engine";
+import { DTMF_GRID, DtmfKeyInfo, HIGH_FREQS, HighFreq, LOW_FREQS, LowFreq } from "../types";
 
 interface KeypadProps {
   onKeyActive: (key: string | null, low: LowFreq | null, high: HighFreq | null) => void;
@@ -25,6 +25,20 @@ export function Keypad({ onKeyActive, activeKey }: KeypadProps) {
       setPressedKey(null);
     }
   }, [activeKey]);
+
+  // Register state change listener on the audio engine (e.g. key timeout release)
+  useEffect(() => {
+    const engine = DtmfEngine.getInstance();
+    engine.registerStateCallback(playing => {
+      if (!playing) {
+        setPressedKey(null);
+        onKeyActive(null, null, null);
+      }
+    });
+    return () => {
+      engine.registerStateCallback(() => {});
+    };
+  }, [onKeyActive]);
 
   // Handle playing individual key
   const handlePressStart = (e: React.PointerEvent, keyInfo: DtmfKeyInfo) => {
