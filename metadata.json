@@ -1,0 +1,6 @@
+{
+  "name": "DTMF Tone Generator",
+  "description": "An interactive DTMF tone generator, sound play space, realtime wave synthesizer and visualizer, and an educational playground detailing DTMF frequencies and Dart/Java implementation.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
