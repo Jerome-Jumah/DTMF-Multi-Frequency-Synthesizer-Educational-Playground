@@ -205,69 +205,74 @@ class AndroidDtmfGenerator {
 }`;
 
   return (
-    <div className="flex flex-col gap-6 bg-slate-900 border border-slate-800 p-6 md:p-8 rounded-2xl shadow-xl max-w-4xl mx-auto">
-      <div className="flex items-center justify-between border-b border-slate-800 pb-4">
+    <div className="flex flex-col gap-6 bg-slate-900 border border-slate-800 p-4 md:p-8 rounded-2xl shadow-xl max-w-4xl mx-auto w-full">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-slate-800 pb-4">
         <div className="flex items-center gap-2">
           <Code className="w-5 h-5 text-sky-400" />
           <h3 className="font-sans font-bold text-slate-100">Export DTMF Library Source</h3>
         </div>
-        <div className="text-xs font-mono text-slate-400">Clean Math, Perfect Porting</div>
+        <div className="text-[10px] sm:text-xs font-mono text-slate-400">Clean Math, Perfect Porting</div>
       </div>
 
-      <p className="text-sm text-slate-400 leading-relaxed">
+      <p className="text-xs sm:text-sm text-slate-400 leading-relaxed">
         Click to review and copy the core mathematical DTMF synthesis algorithms. These functions generate audio binary streams on-the-fly and work
         fully offline without any third-party dependencies!
       </p>
 
       {/* Tabs */}
-      <div className="flex bg-slate-950 p-1.5 rounded-lg border border-slate-800 self-start">
+      <div className="grid grid-cols-2 sm:flex bg-slate-950 p-1 rounded-lg border border-slate-800 w-full sm:w-auto self-start gap-1">
         <button
           onClick={() => setActiveTab("dart")}
-          className={`flex items-center gap-2 px-4 py-2 text-xs font-sans font-bold uppercase tracking-wider rounded-md cursor-pointer transition-all ${
+          className={`flex items-center justify-center gap-2 px-3 py-2 text-[11px] sm:text-xs font-sans font-bold uppercase tracking-wider rounded-md cursor-pointer transition-all ${
             activeTab === "dart" ? "bg-sky-400/10 text-sky-400 font-semibold" : "text-slate-400 hover:text-slate-200"
           }`}
           id="btn-tab-dart"
         >
           <Laptop className="w-4 h-4" />
-          Dart (Standard Port)
+          <span>Dart (Standard Port)</span>
         </button>
         <button
           onClick={() => setActiveTab("kotlin")}
-          className={`flex items-center gap-2 px-4 py-2 text-xs font-sans font-bold uppercase tracking-wider rounded-md cursor-pointer transition-all ${
+          className={`flex items-center justify-center gap-2 px-3 py-2 text-[11px] sm:text-xs font-sans font-bold uppercase tracking-wider rounded-md cursor-pointer transition-all ${
             activeTab === "kotlin" ? "bg-amber-500/10 text-amber-500 font-semibold" : "text-slate-400 hover:text-slate-200"
           }`}
           id="btn-tab-kotlin"
         >
           <Smartphone className="w-4 h-4" />
-          Kotlin (Android AudioTrack)
+          <span>Kotlin (Android)</span>
         </button>
       </div>
 
-      {/* Export Display Area */}
-      <div className="relative group">
-        {/* Copy Floating Button */}
-        <button
-          onClick={() => copyToClipboard(activeTab === "dart" ? dartCode : kotlinCode, activeTab)}
-          className="absolute top-4 right-4 bg-slate-900 border border-slate-800 text-slate-300 hover:text-slate-100 p-2 rounded-lg cursor-pointer transition-all flex items-center gap-1.5 shadow-lg"
-          title="Copy to clipboard"
-          id="btn-copy-code"
-        >
-          {copied === activeTab ? (
-            <>
-              <Check className="w-4 h-4 text-emerald-500" />
-              <span className="text-[10px] font-mono text-emerald-500 font-bold">COPIED!</span>
-            </>
-          ) : (
-            <>
-              <Copy className="w-4 h-4" />
-              <span className="text-[10px] font-mono">COPY</span>
-            </>
-          )}
-        </button>
+      {/* Export Display Area - Enhanced for perfect mobile readability */}
+      <div className="relative flex flex-col gap-0 border border-slate-800 bg-slate-950 rounded-xl overflow-hidden">
+        {/* Helper Code Bar Header to host Copy Actions */}
+        <div className="flex items-center justify-between px-4 py-2 bg-slate-900 border-b border-slate-800/80">
+          <span className="text-[10px] font-mono tracking-wider text-slate-500">
+            {activeTab === "dart" ? "dtmf_generator.dart" : "AndroidDtmfGenerator.kt"}
+          </span>
+          <button
+            onClick={() => copyToClipboard(activeTab === "dart" ? dartCode : kotlinCode, activeTab)}
+            className="bg-slate-950 hover:bg-slate-800 text-slate-300 hover:text-slate-100 border border-slate-800 px-3 py-1.5 rounded-md cursor-pointer transition-all flex items-center gap-1.5 shadow-sm hover:border-slate-700 active:translate-y-0.5"
+            title="Copy to clipboard"
+            id="btn-copy-code"
+          >
+            {copied === activeTab ? (
+              <>
+                <Check className="w-3.5 h-3.5 text-emerald-400 animate-pulse" />
+                <span className="text-[9px] font-mono text-emerald-400 font-bold">COPIED!</span>
+              </>
+            ) : (
+              <>
+                <Copy className="w-3.5 h-3.5 text-sky-400" />
+                <span className="text-[9px] font-mono font-bold">COPY CODE</span>
+              </>
+            )}
+          </button>
+        </div>
 
-        {/* Code Block */}
-        <div className="bg-slate-950 border border-slate-800/80 rounded-xl max-h-[420px] overflow-auto shadow-inner font-mono text-xs text-slate-300 p-5 leading-relaxed antialiased">
-          <pre className="whitespace-pre">{activeTab === "dart" ? dartCode : kotlinCode}</pre>
+        {/* Code Block with responsive padding */}
+        <div className="max-h-[420px] overflow-auto font-mono text-[11px] sm:text-xs text-slate-300 p-4 md:p-5 leading-relaxed antialiased">
+          <pre className="whitespace-pre overflow-x-auto">{activeTab === "dart" ? dartCode : kotlinCode}</pre>
         </div>
       </div>
 
