@@ -112,11 +112,11 @@ class DtmfGenerator {
 
 ### Structure
 
-- `/src/dtmfEngine.ts`: The central Web Audio oscillator controller that mixes low/high filters and maps sequences.
-- `/src/components/Visualizer.tsx`: Custom-drawn canvas oscilloscope and FFT magnitude analyzers.
-- `/src/components/Keypad.tsx`: Grid coordinates mapping system.
-- `/src/components/LessonKid.tsx`: Interactive slides explaining signal routing and the tuning fork analogy.
-- `/src/components/CodeExporter.tsx`: Quick source displays for standard Flutter/Android system ports.
+- `/src/dtmf-engine.ts`: The central Web Audio oscillator controller that mixes low/high filters and maps sequences.
+- `/src/components/visualizer.tsx`: Custom-drawn canvas oscilloscope and FFT magnitude analyzers.
+- `/src/components/keypad.tsx`: Grid coordinates mapping system.
+- `/src/components/lesson-kid.tsx`: Interactive slides explaining signal routing and the tuning fork analogy.
+- `/src/components/code-exporter.tsx`: Quick source displays for standard Flutter/Android system ports.
 
 ### Setup and Running Locally
 
