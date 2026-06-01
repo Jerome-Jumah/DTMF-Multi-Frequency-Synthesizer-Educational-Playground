@@ -19,6 +19,7 @@ export class DtmfEngine {
   private onStateChange: ((playing: boolean, activeKey: string | null) => void) | null = null;
 
   private isSequencePlaying: boolean = false;
+  private safetyTimeoutId: number | null = null;
 
   private constructor() {
     // Lazy loaded on first user gesture
@@ -46,7 +47,7 @@ export class DtmfEngine {
     try {
       const AudioContextClass = window.AudioContext || (window as any).webkitAudioContext;
       this.audioCtx = new AudioContextClass();
-      
+
       this.analyserNode = this.audioCtx.createAnalyser();
       this.analyserNode.fftSize = 1024;
       this.analyserNode.smoothingTimeConstant = 0.3;
@@ -80,6 +81,12 @@ export class DtmfEngine {
     this.init();
     if (!this.audioCtx || !this.analyserNode) return;
 
+    // Clear any existing active safety timeouts
+    if (this.safetyTimeoutId) {
+      window.clearTimeout(this.safetyTimeoutId);
+      this.safetyTimeoutId = null;
+    }
+
     // Disconnect existing if any
     this.stopToneImmediate();
 
@@ -111,12 +118,22 @@ export class DtmfEngine {
     // Start
     this.oscLow.start(now);
     this.oscHigh.start(now);
+
+    // Safety timeout: Auto stop after 1.8 seconds max hold to prevent stuck tones on mobile/interrupted streams
+    this.safetyTimeoutId = window.setTimeout(() => {
+      this.stopTone();
+    }, 1800);
   }
 
   /**
    * Stops the active tone smoothly to prevent sudden audio clicks
    */
   public stopTone() {
+    if (this.safetyTimeoutId) {
+      window.clearTimeout(this.safetyTimeoutId);
+      this.safetyTimeoutId = null;
+    }
+
     if (!this.audioCtx) return;
     const now = this.audioCtx.currentTime;
     const fadeTime = 0.03; // 30ms smooth release transition
@@ -132,17 +149,20 @@ export class DtmfEngine {
       // Stop and clean up reference after fade
       const low = this.oscLow;
       const high = this.oscHigh;
-      
-      setTimeout(() => {
-        try {
-          low?.stop();
-          high?.stop();
-          low?.disconnect();
-          high?.disconnect();
-        } catch (err) {
-          // Guard against already stopped
-        }
-      }, fadeTime * 1000 + 10);
+
+      setTimeout(
+        () => {
+          try {
+            low?.stop();
+            high?.stop();
+            low?.disconnect();
+            high?.disconnect();
+          } catch (err) {
+            // Guard against already stopped
+          }
+        },
+        fadeTime * 1000 + 10,
+      );
     } else {
       this.stopToneImmediate();
     }
@@ -177,20 +197,32 @@ export class DtmfEngine {
     sequence: string,
     onStep: (activeKey: string | null) => void,
     toneDurationMs: number = 200,
-    pauseDurationMs: number = 100
+    pauseDurationMs: number = 100,
   ): Promise<void> {
     this.isSequencePlaying = true;
     this.init();
 
     // Map characters to frequencies
     const freqMap: Record<string, [number, number]> = {
-      "1": [697, 1209], "2": [697, 1336], "3": [697, 1477], "A": [697, 1633],
-      "4": [770, 1209], "5": [770, 1336], "6": [770, 1477], "B": [770, 1633],
-      "7": [852, 1209], "8": [852, 1336], "9": [852, 1477], "C": [852, 1633],
-      "*": [941, 1209], "0": [941, 1336], "#": [941, 1477], "D": [941, 1633],
+      "1": [697, 1209],
+      "2": [697, 1336],
+      "3": [697, 1477],
+      A: [697, 1633],
+      "4": [770, 1209],
+      "5": [770, 1336],
+      "6": [770, 1477],
+      B: [770, 1633],
+      "7": [852, 1209],
+      "8": [852, 1336],
+      "9": [852, 1477],
+      C: [852, 1633],
+      "*": [941, 1209],
+      "0": [941, 1336],
+      "#": [941, 1477],
+      D: [941, 1633],
       " ": [0, 0], // pause/space
       "-": [0, 0],
-      ",": [0, 0]
+      ",": [0, 0],
     };
 
     // Clean up sequence string
@@ -203,17 +235,17 @@ export class DtmfEngine {
       if (freqs && freqs[0] > 0 && freqs[1] > 0) {
         onStep(char);
         this.startTone(freqs[0], freqs[1]);
-        await new Promise((resolve) => setTimeout(resolve, toneDurationMs));
+        await new Promise(resolve => setTimeout(resolve, toneDurationMs));
         this.stopTone();
         onStep(null);
       } else {
         // Just pause for non-dtmf characters or spaces
         onStep(null);
-        await new Promise((resolve) => setTimeout(resolve, toneDurationMs));
+        await new Promise(resolve => setTimeout(resolve, toneDurationMs));
       }
 
       // Inter-digit pause
-      await new Promise((resolve) => setTimeout(resolve, pauseDurationMs));
+      await new Promise(resolve => setTimeout(resolve, pauseDurationMs));
     }
 
     this.isSequencePlaying = false;
