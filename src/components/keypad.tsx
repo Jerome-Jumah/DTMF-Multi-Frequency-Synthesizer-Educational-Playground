@@ -3,10 +3,10 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
+import { Keyboard, Phone, Volume2 } from "lucide-react";
 import React, { useEffect, useState } from "react";
-import { DTMF_GRID, DtmfKeyInfo, LOW_FREQS, HIGH_FREQS, LowFreq, HighFreq } from "../types";
+import { DTMF_GRID, DtmfKeyInfo, HIGH_FREQS, HighFreq, LOW_FREQS, LowFreq } from "../types";
 import { DtmfEngine } from "../dtmf-engine";
-import { Phone, Grid, Keyboard, Volume2 } from "lucide-react";
 
 interface KeypadProps {
   onKeyActive: (key: string | null, low: LowFreq | null, high: HighFreq | null) => void;
@@ -27,15 +27,21 @@ export function Keypad({ onKeyActive, activeKey }: KeypadProps) {
   }, [activeKey]);
 
   // Handle playing individual key
-  const handlePressStart = (keyInfo: DtmfKeyInfo) => {
+  const handlePressStart = (e: React.PointerEvent, keyInfo: DtmfKeyInfo) => {
     if (activeKey) return; // Ignore if playing automated sequence
+    try {
+      e.currentTarget.setPointerCapture(e.pointerId);
+    } catch (_) {}
     setPressedKey(keyInfo.key);
     onKeyActive(keyInfo.key, keyInfo.low, keyInfo.high);
     DtmfEngine.getInstance().startTone(keyInfo.low, keyInfo.high);
   };
 
-  const handlePressEnd = () => {
+  const handlePressEnd = (e: React.PointerEvent) => {
     if (activeKey) return; // Done by external automated player
+    try {
+      e.currentTarget.releasePointerCapture(e.pointerId);
+    } catch (_) {}
     setPressedKey(null);
     onKeyActive(null, null, null);
     DtmfEngine.getInstance().stopTone();
@@ -197,9 +203,10 @@ export function Keypad({ onKeyActive, activeKey }: KeypadProps) {
                 return (
                   <button
                     key={btn.key}
-                    onPointerDown={() => handlePressStart(btn)}
+                    onPointerDown={e => handlePressStart(e, btn)}
                     onPointerUp={handlePressEnd}
                     onPointerLeave={handlePressEnd}
+                    onPointerCancel={handlePressEnd}
                     onContextMenu={e => e.preventDefault()}
                     className={`relative flex flex-col items-center justify-center aspect-square rounded-lg select-none cursor-pointer transition-all ${
                       isPressed
